@@ -6,7 +6,7 @@ class UserManager(BaseUserManager):
     Класс менеджера объектов, который будет использоваться при создании пользователей
     """
 
-    def create_user(self, email, first_name, last_name, phone=None, password=None):
+    def create_user(self, email, first_name, last_name, password=None):
         """
             Функция создания пользователя
             """
@@ -25,7 +25,7 @@ class UserManager(BaseUserManager):
 
         return user
 
-    def create_superuser(self, email, first_name, last_name, phone=None, password=None, role='admin'):
+    def create_superuser(self, email, first_name, last_name, password=None, role='admin'):
         """
         Функция для создания суперпользователя — с ее помощью мы создаем администратора
         это можно сделать с помощью команды createsuperuser
