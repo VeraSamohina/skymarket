@@ -29,6 +29,7 @@ class User(AbstractBaseUser):
     email = models.EmailField(unique=True)
     image = models.ImageField(upload_to='users/', null=True, blank=True, verbose_name='Аватар')
     role = models.CharField(max_length=50, choices=UserRoles.choices, default=UserRoles.USER, verbose_name='Роль')
+    is_active = models.BooleanField(default=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ['first_name', 'last_name', "role"]
@@ -37,6 +38,12 @@ class User(AbstractBaseUser):
 
     def __str__(self):
         return self.email
+
+    def has_perm(self, perm, obj=None):
+        return self.is_admin
+
+    def has_module_perms(self, app_label):
+        return self.is_admin
 
     @property
     def is_admin(self):
