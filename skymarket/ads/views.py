@@ -6,13 +6,18 @@ from ads.filters import AdFilter
 
 
 class AdPagination(pagination.PageNumberPagination):
-    pass
+    """
+        Класс пагинации для списка объявлений.
+    """
+    page_size = 4
 
 
 class AdViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = AdFilter
+    pagination_class = AdPagination
     queryset = Ad.objects.all()
+
 
     def get_serializer_class(self):
         """
@@ -33,6 +38,7 @@ class AdViewSet(viewsets.ModelViewSet):
 class MyAdListAPIView(generics.ListAPIView):
     serializer_class = AdSerializer
     queryset = Ad.objects.all()
+    pagination_class = AdPagination
 
     def list(self, request, *args, **kwargs):
         """
