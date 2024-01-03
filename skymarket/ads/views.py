@@ -1,5 +1,8 @@
 from rest_framework import pagination, viewsets, generics
+from rest_framework.permissions import IsAuthenticated, AllowAny
+
 from ads.models import Ad, Comment
+from ads.permissions import IsOwner, IsAdmin
 from ads.serializers import AdSerializer, CommentSerializer, AdDetailSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from ads.filters import AdFilter
@@ -15,13 +18,34 @@ class AdPagination(pagination.PageNumberPagination):
 class AdViewSet(viewsets.ModelViewSet):
     """
     Вьюсет для модели Объявление (Ad).
-    Используется созданный фильтр по названию и пагинация.
-    При создании поле "автор" заполняется текущим пользователем
     """
     filter_backends = (DjangoFilterBackend,)
     filterset_class = AdFilter
     pagination_class = AdPagination
     queryset = Ad.objects.all()
+
+    def get_permissions(self):
+        """
+        Установление прав доступа.
+        Неавторизированный пользователь может видеть список объявлений.
+
+        Авторизированный пользователь может:
+        - видеть список объявлений;
+        - видеть одно объявление (детально);
+        - создавать объявления;
+        - редактировать и удалять свои объявления.
+
+        Администратор дополнительно к правам авторизованного пользователя может редактировать и удалять чужие объявления
+
+        """
+
+        if self.action in ['retrieve', 'create']:
+            permission_classes = [IsAuthenticated]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            permission_classes = [IsAuthenticated, IsOwner | IsAdmin]
+        else:
+            permission_classes = [AllowAny]
+        return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
         """
@@ -33,6 +57,9 @@ class AdViewSet(viewsets.ModelViewSet):
         return AdDetailSerializer
 
     def perform_create(self, serializer):
+        """
+            Создание нового объявление и установление автора.
+        """
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
@@ -57,19 +84,33 @@ class MyAdListAPIView(generics.ListAPIView):
 
 class CommentViewSet(viewsets.ModelViewSet):
     """
-        Вьюсет для модели Отзывов (Comment)
+        Вьюсет для модели Отзывов (Comment) к объявлениям
     """
     serializer_class = CommentSerializer
     queryset = Comment.objects.all()
+
+    def get_permissions(self):
+        """
+        Определяет права доступа в зависимости от выполняемого действия.
+        """
+        if self.action in ['retrieve', 'create']:
+            permission_classes = [IsAuthenticated]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            permission_classes = [IsAuthenticated, IsOwner | IsAdmin]
+        else:
+            permission_classes = [AllowAny]
+        return [permission() for permission in permission_classes]
 
     def perform_create(self, serializer):
         """
         Создание комментария и установление автора.
         """
-        serializer.save(author=self.request.user)
+        ad_id = self.kwargs['ad_id']
+        serializer.save(author=self.request.user, ad=Ad.objects.get(pk=ad_id))
 
     def perform_update(self, serializer):
-        serializer.save(author=self.request.user)
+        ad_id = self.kwargs['ad_id']
+        serializer.save(author=self.request.user, ad=Ad.objects.get(pk=ad_id))
 
     def get_queryset(self):
         return self.queryset.filter(ad=self.kwargs['ad_pk']).select_related("author")
