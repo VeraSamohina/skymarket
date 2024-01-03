@@ -101,8 +101,12 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
+DOMAIN = '127.0.0.1:3000'
+SITE_NAME = '127.0.0.1:3000'
+
 # DJOSER
 DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
     'SERIALIZERS': {
         'user_create': 'users.serializers.UserRegistrationSerializer'
     },
@@ -184,13 +188,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = 'users.User'
 
-
-# Include Email Backend
-# TODO эти переменные мы добавили чтобы помочь Вам настроить почтовый ящик на django.
-# TODO теперь Вам необходимо создать файл .env на основе .env.example
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_USE_TLS = True
-# EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
-# EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-# EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-# EMAIL_PORT = os.environ.get("EMAIL_PORT")
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_USE_SSL = True
+EMAIL_HOST = os.environ.get("EMAIL_HOST")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+EMAIL_PORT = os.environ.get("EMAIL_PORT")
+DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER')

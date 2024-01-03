@@ -28,7 +28,7 @@ class AdViewSet(viewsets.ModelViewSet):
         Выбор сериализатора зависит от self.action.
         """
 
-        if self.action in ['list']:
+        if self.action in ['list', 'create']:
             return AdSerializer
         return AdDetailSerializer
 
